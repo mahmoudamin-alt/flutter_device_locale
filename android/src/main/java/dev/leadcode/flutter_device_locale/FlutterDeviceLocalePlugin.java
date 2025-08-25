@@ -5,7 +5,7 @@ import android.os.LocaleList;
 
 import androidx.annotation.NonNull;
 
-import 	java.util.*;
+import java.util.*;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.BinaryMessenger;
@@ -13,10 +13,8 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 
-public class FlutterDeviceLocalePlugin implements FlutterPlugin, MethodCallHandler
-{
+public class FlutterDeviceLocalePlugin implements FlutterPlugin, MethodCallHandler {
     private MethodChannel channel;
 
     @Override
@@ -25,14 +23,11 @@ public class FlutterDeviceLocalePlugin implements FlutterPlugin, MethodCallHandl
     }
 
     @Override
-    public void onDetachedFromEngine(FlutterPluginBinding binding) {
-        channel.setMethodCallHandler(null);
-    }
-
-    public static void registerWith(Registrar registrar)
-    {
-        FlutterDeviceLocalePlugin instance = new FlutterDeviceLocalePlugin();
-        instance.register(registrar.messenger());
+    public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+        if (channel != null) {
+            channel.setMethodCallHandler(null);
+            channel = null;
+        }
     }
 
     private void register(BinaryMessenger binaryMessenger) {
@@ -41,38 +36,24 @@ public class FlutterDeviceLocalePlugin implements FlutterPlugin, MethodCallHandl
     }
 
     @Override
-    public void onMethodCall(MethodCall call, Result result)
-    {
-        if(call.method.equals("deviceLocales"))
-        {
+    public void onMethodCall(MethodCall call, Result result) {
+        if ("deviceLocales".equals(call.method)) {
             result.success(getDeviceLocales());
-        }
-        else
-        {
+        } else {
             result.notImplemented();
         }
     }
 
-
-    private List<String> getDeviceLocales()
-    {
+    private List<String> getDeviceLocales() {
         List<String> result = new ArrayList<>();
 
-        LocaleList list;
-
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N)
-        {
-            list = Resources.getSystem().getConfiguration().getLocales().getAdjustedDefault();
-
-            for(int i=0; i < list.size(); i++)
-            {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            LocaleList list = Resources.getSystem().getConfiguration().getLocales();
+            for (int i = 0; i < list.size(); i++) {
                 result.add(list.get(i).toString());
             }
-        }
-        else
-        {
+        } else {
             result.add(Locale.getDefault().toString());
-
         }
 
         return result;
